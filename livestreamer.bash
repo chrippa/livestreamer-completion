@@ -27,11 +27,10 @@ _livestreamer()
 
     local valid_sources=""
     for wordlist in $URL_SOURCES; do
-    	if [[ -f $wordlist ]]; then
+        if [[ -f $wordlist ]]; then
             valid_sources="$valid_sources $wordlist"
-    	fi
+        fi
     done
-
 
     COMPREPLY=($(compgen -W '$(cat $valid_sources)' -- "$cur"))
 } &&
