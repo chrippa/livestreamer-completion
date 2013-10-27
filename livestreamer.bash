@@ -9,6 +9,7 @@
 # Will complete URLs from these files if they exist.
 URL_SOURCES=$(ls ~/.config/livestreamer/favorites* 2>/dev/null)
 
+_livestreamer_help_cache=""
 _livestreamer()
 {
     local cur prev words cword
@@ -20,8 +21,12 @@ _livestreamer()
             ;;
     esac
 
+    if [[ $_livestreamer_help_cache == "" ]]; then
+        _livestreamer_help_cache=$(_parse_help $1)
+    fi
+
     if [[ $cur == -* ]]; then
-        COMPREPLY=($(compgen -W '$(_parse_help "$1")' -- "$cur"))
+        COMPREPLY=($(compgen -W "$_livestreamer_help_cache" -- "$cur"))
         return
     fi
 
