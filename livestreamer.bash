@@ -21,11 +21,11 @@ _livestreamer()
             ;;
     esac
 
-    if [[ $_livestreamer_help_cache == "" ]]; then
-        _livestreamer_help_cache=$(_parse_help $1)
-    fi
-
     if [[ $cur == -* ]]; then
+        if [[ $_livestreamer_help_cache == "" ]]; then
+            _livestreamer_help_cache=$(_parse_help $1)
+        fi
+
         COMPREPLY=($(compgen -W "$_livestreamer_help_cache" -- "$cur"))
         return
     fi
