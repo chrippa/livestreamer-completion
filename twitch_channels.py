@@ -54,8 +54,15 @@ def iterate_pages_result(*args, **kwargs):
     return chain.from_iterable(iterate_pages(*args, **kwargs))
 
 
+def print_channels(channels):
+    for channel in channels:
+        channel_name = channel.get("channel").get("name")
+        print("twitch.tv/{0}".format(channel_name))
+
+
 # Twitch APIs
 team_channels = partial(api, "/api/team/{0}/all_channels.json", insecure=True)
+streams = partial(api, "/kraken/streams")
 user_follows = partial(api, "/kraken/users/{0}/follows/channels")
 
 
@@ -64,6 +71,8 @@ parser.add_argument("-f", "--follows", action="append", default=[],
                     metavar="user", help="channels a user is following",)
 parser.add_argument("-t", "--team", action="append", default=[],
                     metavar="team", help="channels that are part of a team")
+parser.add_argument("-o", "--online", action="store_true",
+                    help="Only return the channels that are online")
 
 
 def main():
@@ -71,18 +80,21 @@ def main():
     if not (args.follows or args.team):
         return parser.print_help()
 
+    channels = []
     for user in args.follows:
         myuser_follows = partial(user_follows, user)
-
-        for channel in iterate_pages_result(myuser_follows, limit=100):
-            channel_name = channel.get("channel").get("name")
-            print("twitch.tv/{0}".format(channel_name))
+        channels += iterate_pages_result(myuser_follows, limit=100)
 
     for team in args.team:
-        channels = team_channels(team).get("channels", [])
-        for channel in channels:
-            channel_name = channel.get("channel").get("name")
-            print("twitch.tv/{0}".format(channel_name))
+        channels += team_channels(team).get("channels", [])
+
+    if args.online:
+        channel_list = ",".join(c.get("channel").get("name") for c in channels)
+        online_channels = streams(channel=channel_list).get("streams")
+        if online_channels:
+            print_channels(online_channels)
+    else:
+        print_channels(channels)
 
 
 if __name__ == "__main__":
